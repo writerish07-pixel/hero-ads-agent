@@ -40,7 +40,7 @@ Tokens are obtained via `/api/auth/login` or `/api/auth/register`.
 
 Authenticate with email and password and receive JWT tokens.
 
-**Rate limited** — 5 requests per 15 minutes per IP.
+**Rate limited** — 10 requests per 15 minutes per IP.
 
 **Request body**
 
@@ -87,7 +87,7 @@ Authenticate with email and password and receive JWT tokens.
 
 Create a new user account.
 
-**Rate limited** — 5 requests per 15 minutes per IP.
+**Rate limited** — 10 requests per 15 minutes per IP.
 
 **Request body**
 

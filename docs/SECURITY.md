@@ -113,7 +113,7 @@ Rate limiting is implemented with [express-rate-limit](https://github.com/expres
 
 | Limiter | Applies to | Limit |
 |---|---|---|
-| `strictLimiter` | `POST /api/auth/login`, `POST /api/auth/register` | 5 requests per 15 minutes |
+| `strictLimiter` | `POST /api/auth/login`, `POST /api/auth/register` | 10 requests per 15 minutes |
 | `standardLimiter` | All other API routes | 100 requests per 15 minutes |
 
 In production, deploy behind a reverse proxy (Nginx) and set `app.set('trust proxy', 1)` so that `X-Forwarded-For` is used as the client IP, not the proxy IP.
