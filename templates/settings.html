@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Settings – WhatsApp{% endblock %}
+{% block page_title %}Settings & Configuration{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl space-y-6">
+
+  <!-- WhatsApp API Config -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+      <h2 class="font-semibold text-gray-700 flex items-center gap-2">
+        <svg class="w-5 h-5 text-wa-green" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        WhatsApp Cloud API Credentials
+      </h2>
+      <p class="text-xs text-gray-500 mt-0.5">Configure these via environment variables on your hosting platform.</p>
+    </div>
+    <div class="px-6 py-5 space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Access Token</label>
+          <div class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm text-gray-700">{{ token_masked }}</div>
+          <p class="text-xs text-gray-400 mt-1">Env: <code>WHATSAPP_TOKEN</code></p>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Phone Number ID</label>
+          <div class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm text-gray-700">{{ phone_id }}</div>
+          <p class="text-xs text-gray-400 mt-1">Env: <code>PHONE_NUMBER_ID</code></p>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">WABA ID</label>
+          <div class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm text-gray-700">{{ waba_id }}</div>
+          <p class="text-xs text-gray-400 mt-1">Env: <code>WHATSAPP_BUSINESS_ACCOUNT_ID</code></p>
+        </div>
+      </div>
+      <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+        <strong>Security note:</strong> Credentials are read-only from environment variables. To update them, edit your Render service environment variables and redeploy.
+      </div>
+    </div>
+  </div>
+
+  <!-- Webhook Configuration -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+      <h2 class="font-semibold text-gray-700">Webhook Configuration</h2>
+      <p class="text-xs text-gray-500 mt-0.5">Configure this in your Meta App Dashboard → WhatsApp → Configuration.</p>
+    </div>
+    <div class="px-6 py-5 space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Webhook URL</label>
+        <div class="flex items-center gap-2">
+          <div class="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm text-blue-600 break-all">{{ webhook_url }}</div>
+          <button onclick="copyText('{{ webhook_url }}')"
+                  class="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-xs text-gray-600 transition whitespace-nowrap">
+            Copy
+          </button>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Verify Token</label>
+        <div class="flex items-center gap-2">
+          <div class="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm text-gray-700">{{ verify_token }}</div>
+          <button onclick="copyText('{{ verify_token }}')"
+                  class="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-xs text-gray-600 transition whitespace-nowrap">
+            Copy
+          </button>
+        </div>
+        <p class="text-xs text-gray-400 mt-1">Env: <code>VERIFY_TOKEN</code></p>
+      </div>
+
+      <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-800 space-y-1">
+        <p class="font-semibold">Setup steps in Meta App Dashboard:</p>
+        <ol class="list-decimal list-inside space-y-1 text-xs">
+          <li>Go to <strong>WhatsApp → Configuration</strong> in your Meta App.</li>
+          <li>Click <strong>Edit</strong> in the Webhook section.</li>
+          <li>Enter the <strong>Webhook URL</strong> above.</li>
+          <li>Enter the <strong>Verify Token</strong> above.</li>
+          <li>Click <strong>Verify and Save</strong>.</li>
+          <li>Subscribe to <strong>messages</strong> under Webhook Fields.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- Required Environment Variables -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+      <h2 class="font-semibold text-gray-700">Required Environment Variables</h2>
+    </div>
+    <div class="px-6 py-5">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wide pb-2">Variable</th>
+              <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wide pb-2">Description</th>
+              <th class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wide pb-2">Required</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            {% for row in [
+              ('WHATSAPP_TOKEN', 'Meta WhatsApp Cloud API access token', 'Yes'),
+              ('PHONE_NUMBER_ID', 'WhatsApp Phone Number ID from Meta', 'Yes'),
+              ('WHATSAPP_BUSINESS_ACCOUNT_ID', 'WhatsApp Business Account ID', 'Yes'),
+              ('VERIFY_TOKEN', 'Webhook verify token (you choose this value)', 'Yes'),
+              ('ADMIN_USERNAME', 'Dashboard login username', 'Yes'),
+              ('ADMIN_PASSWORD', 'Dashboard login password', 'Yes'),
+              ('SECRET_KEY', 'Session secret key (random string)', 'Recommended'),
+            ] %}
+            <tr>
+              <td class="py-2 font-mono text-xs text-blue-700">{{ row[0] }}</td>
+              <td class="py-2 text-gray-600">{{ row[1] }}</td>
+              <td class="py-2">
+                <span class="px-2 py-0.5 rounded text-xs font-medium
+                  {% if row[2] == 'Yes' %}bg-red-100 text-red-700{% else %}bg-yellow-100 text-yellow-700{% endif %}">
+                  {{ row[2] }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    btn.classList.add('bg-green-100', 'text-green-700');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('bg-green-100', 'text-green-700'); }, 2000);
+  });
+}
+</script>
+{% endblock %}

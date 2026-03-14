@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Inbox – WhatsApp{% endblock %}
+{% block page_title %}Chat Inbox{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <div>
+      <h2 class="font-semibold text-gray-700">All Conversations</h2>
+      <p class="text-xs text-gray-500 mt-0.5">{{ contacts|length }} contact{{ 's' if contacts|length != 1 }}</p>
+    </div>
+    <!-- Search (client-side) -->
+    <input id="search" type="search" placeholder="Search contacts…"
+           oninput="filterContacts()"
+           class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-wa-green w-48"/>
+  </div>
+
+  {% if contacts %}
+  <ul id="contacts-list" class="divide-y divide-gray-50">
+    {% for c in contacts %}
+    <li class="contact-item" data-name="{{ (c.name or c.phone)|lower }}" data-phone="{{ c.phone }}">
+      <a href="/inbox/{{ c.phone }}"
+         class="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
+        <!-- Avatar -->
+        <div class="w-11 h-11 rounded-full bg-wa-light flex items-center justify-center font-bold text-wa-teal flex-shrink-0 text-base">
+          {{ (c.name or c.phone)[0].upper() }}
+        </div>
+        <!-- Info -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between mb-0.5">
+            <p class="font-semibold text-gray-800 text-sm truncate">{{ c.name or c.phone }}</p>
+            <p class="text-xs text-gray-400 flex-shrink-0 ml-2">
+              {% if c.last_message_time %}{{ c.last_message_time[-8:] }}{% endif %}
+            </p>
+          </div>
+          <p class="text-sm text-gray-500 truncate">{{ c.last_message or '—' }}</p>
+          <p class="text-xs text-gray-400 font-mono mt-0.5">{{ c.phone }}</p>
+        </div>
+        <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="px-6 py-16 text-center">
+    <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+    </svg>
+    <p class="text-gray-500 font-medium">No conversations yet</p>
+    <p class="text-gray-400 text-sm mt-1">Incoming WhatsApp messages will appear here.</p>
+    <p class="text-gray-400 text-xs mt-3">
+      Make sure your webhook is configured at <code class="bg-gray-100 px-1 rounded">/webhook</code>.
+    </p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterContacts() {
+  const q = document.getElementById('search').value.toLowerCase();
+  document.querySelectorAll('.contact-item').forEach(item => {
+    const name = item.dataset.name || '';
+    const phone = item.dataset.phone || '';
+    item.style.display = (name.includes(q) || phone.includes(q)) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

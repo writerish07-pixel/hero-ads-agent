@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Conversation – {{ contact.name or phone }}{% endblock %}
+{% block page_title %}Conversation{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl flex flex-col" style="height: calc(100vh - 120px);">
+
+  <!-- Header -->
+  <div class="bg-white rounded-t-xl shadow-sm border border-gray-100 px-5 py-4 flex items-center gap-4 flex-shrink-0">
+    <a href="/inbox" class="text-gray-400 hover:text-gray-600 transition">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <div class="w-10 h-10 rounded-full bg-wa-light flex items-center justify-center font-bold text-wa-teal flex-shrink-0">
+      {{ (contact.name or phone)[0].upper() }}
+    </div>
+    <div class="flex-1 min-w-0">
+      <p class="font-semibold text-gray-800 text-sm">{{ contact.name or phone }}</p>
+      <p class="text-xs text-gray-400 font-mono">{{ phone }}</p>
+    </div>
+    <!-- Quick send template -->
+    <a href="/send" class="text-xs text-wa-teal hover:underline">Send Template</a>
+  </div>
+
+  <!-- Messages -->
+  <div id="messages-container"
+       class="flex-1 overflow-y-auto bg-wa-bubble px-4 py-4 space-y-3 border-x border-gray-100"
+       style="background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAsSURBVChTY2AYBYMHMDIy/kfCDAxkKfz/TxYmXTEpijFZMSJGYYhRGGoAAA5mBQ+B4V7yAAAAAElFTkSuQmCC');">
+
+    {% if messages %}
+      {% for m in messages %}
+      <div class="flex {% if m.direction == 'outbound' %}justify-end{% else %}justify-start{% endif %}">
+        <div class="max-w-xs lg:max-w-sm {% if m.direction == 'outbound' %}bg-wa-light{% else %}bg-white{% endif %} rounded-xl px-4 py-2.5 shadow-sm">
+          <p class="text-sm text-gray-800 whitespace-pre-wrap break-words">{{ m.content }}</p>
+          <div class="flex items-center justify-end gap-1 mt-1">
+            <span class="text-xs text-gray-400">{{ m.timestamp[-8:] if m.timestamp else '' }}</span>
+            {% if m.direction == 'outbound' %}
+            <svg class="w-3.5 h-3.5 text-wa-teal" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/>
+            </svg>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="flex items-center justify-center h-full">
+        <div class="bg-white/80 rounded-xl px-6 py-4 text-center text-sm text-gray-500 shadow-sm">
+          <p class="font-medium">No messages yet</p>
+          <p class="text-xs mt-1 text-gray-400">Messages sent to/from this contact will appear here.</p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Reply Box -->
+  <div class="bg-white rounded-b-xl shadow-sm border border-gray-100 px-4 py-3 flex items-end gap-3 flex-shrink-0">
+    <textarea id="reply-text"
+              placeholder="Type a message…"
+              rows="1"
+              class="flex-1 px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-wa-green resize-none"
+              onkeydown="handleKeydown(event)"
+              oninput="autoResize(this)"></textarea>
+    <button onclick="sendReply()"
+            id="send-btn"
+            class="w-10 h-10 bg-wa-green hover:bg-wa-teal text-white rounded-full flex items-center justify-center flex-shrink-0 transition-colors">
+      <svg class="w-5 h-5 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+      </svg>
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const PHONE = "{{ phone }}";
+
+// Scroll to bottom on load
+window.addEventListener('load', () => {
+  const c = document.getElementById('messages-container');
+  c.scrollTop = c.scrollHeight;
+});
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function handleKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendReply();
+  }
+}
+
+async function sendReply() {
+  const textarea = document.getElementById('reply-text');
+  const text = textarea.value.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  textarea.disabled = true;
+
+  try {
+    const resp = await fetch('/api/reply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: PHONE, message: text }),
+    });
+    const data = await resp.json();
+
+    if (data.success) {
+      appendMessage(text, 'outbound');
+      textarea.value = '';
+      textarea.style.height = 'auto';
+    } else {
+      alert(`Failed to send: ${data.error || 'Unknown error'}`);
+    }
+  } catch (e) {
+    alert(`Network error: ${e.message}`);
+  } finally {
+    btn.disabled = false;
+    textarea.disabled = false;
+    textarea.focus();
+  }
+}
+
+function appendMessage(content, direction) {
+  const container = document.getElementById('messages-container');
+
+  // Remove empty state if present
+  const empty = container.querySelector('.flex.items-center.justify-center');
+  if (empty) empty.remove();
+
+  const now = new Date().toTimeString().slice(0, 8);
+  const isOut = direction === 'outbound';
+
+  const div = document.createElement('div');
+  div.className = `flex ${isOut ? 'justify-end' : 'justify-start'}`;
+  div.innerHTML = `
+    <div class="max-w-xs lg:max-w-sm ${isOut ? 'bg-wa-light' : 'bg-white'} rounded-xl px-4 py-2.5 shadow-sm">
+      <p class="text-sm text-gray-800 whitespace-pre-wrap break-words">${escapeHtml(content)}</p>
+      <div class="flex items-center justify-end gap-1 mt-1">
+        <span class="text-xs text-gray-400">${now}</span>
+        ${isOut ? `<svg class="w-3.5 h-3.5 text-wa-teal" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/>
+        </svg>` : ''}
+      </div>
+    </div>
+  `;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function escapeHtml(text) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(text));
+  return d.innerHTML;
+}
+</script>
+{% endblock %}
